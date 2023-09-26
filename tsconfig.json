@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "lib": ["es2023", "DOM", "DOM.Iterable", "ESNext"],
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "rootDir": "./src",
+        "declaration": true,
+        "outDir": "./dist",
+        "emitDeclarationOnly": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "strict": true,
+        "skipLibCheck": true
+    },
+    "exclude": ["example", "dist", "node_modules"]
+}

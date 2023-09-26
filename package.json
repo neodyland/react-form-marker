@@ -1,0 +1,39 @@
+{
+    "name": "react-form-marker",
+    "version": "0.1.0",
+    "author": "Googlefan <private@googlefan.net>",
+    "license": "MIT",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "dependencies": {
+        "react": "^18.2.0",
+        "zod": "^3.22.2"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.22",
+        "esbuild": "^0.19.3",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^3.0.3",
+        "terser": "^5.20.0",
+        "typescript": "^5.2.2"
+    },
+    "scripts": {
+        "tsc": "tsc",
+        "build": "node build.mjs",
+        "format": "prettier --write .",
+        "prepublishOnly": "run-s format build tsc",
+        "ci": "run-s format build tsc"
+    },
+    "files": [
+        "dist/**/**",
+        "LICENSE",
+        "README.md",
+        "tsconfig.json",
+        "package.json"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/neodyland/react-form-marker.git"
+    }
+}
