@@ -8,29 +8,6 @@ import {
     type FormElement,
 } from "./base";
 
-function zodInnerBase<T extends z.ZodTypeAny>(
-    t: T,
-    disallow: z.ZodFirstPartyTypeKind[],
-) {
-    const type = t._def.typeName;
-    if (disallow.includes(type)) {
-        return zodInnerBase(t._def.innerType, disallow);
-    }
-    return t;
-}
-
-function zodNoEffect<T extends z.ZodTypeAny>(t: T) {
-    return zodInnerBase(t, [z.ZodFirstPartyTypeKind.ZodEffects]);
-}
-
-function zodInner<T extends z.ZodTypeAny>(t: T) {
-    return zodInnerBase(t, [
-        z.ZodFirstPartyTypeKind.ZodOptional,
-        z.ZodFirstPartyTypeKind.ZodNullable,
-        z.ZodFirstPartyTypeKind.ZodDefault,
-    ]);
-}
-
 type NotUndefined<T> = T extends undefined ? never : T;
 
 type CurrentError<T extends z.ZodRawShape> = {
@@ -58,11 +35,24 @@ interface CurrentState<T extends z.ZodRawShape> {
     error?: CurrentError<T>;
 }
 
+/**
+ * @link https://github.com/colinhacks/zod/discussions/1953
+ */
+function getDefaults<Schema extends z.AnyZodObject>(schema: Schema) {
+    return Object.fromEntries(
+        Object.entries(schema.shape).map(([key, value]) => {
+            if (value instanceof z.ZodDefault)
+                return [key, value._def.defaultValue()];
+            return [key, undefined];
+        }),
+    );
+}
+
 export function useFormMarker<T extends z.ZodRawShape>(
     shape: z.ZodObject<T>,
     defaultEvents?: EventListener<T>,
 ) {
-    let trueShape: z.ZodObject<any> = shape;
+    const defaults = getDefaults(shape);
     const [{ success, error }, setCurrentState] = React.useState<
         CurrentState<T>
     >({});
@@ -82,28 +72,13 @@ export function useFormMarker<T extends z.ZodRawShape>(
         });
         defaultEvents?.error?.(e, x);
     };
-    for (const [key, s] of Object.entries(shape._def.shape())) {
-        const sc = zodInner(s);
-        if (sc instanceof z.ZodNumber) {
-            trueShape = trueShape.extend({
-                [key]: z.preprocess((v) => Number(v), s),
-            });
-        }
-    }
-    const { marker: rawMarker, dispatch } = useBasicFormMarker(
-        trueShape as z.ZodObject<T>,
-        {
-            success: successEvent,
-            error: errorEvent,
-        },
-    );
+    const { marker: rawMarker, dispatch } = useBasicFormMarker(shape, {
+        success: successEvent,
+        error: errorEvent,
+    });
     function marker<E extends FormElement>(e: Key) {
         const ref = rawMarker<E>(e);
-        const s = zodNoEffect(shape._def.shape()[e]);
-        const defaultValue =
-            s instanceof z.ZodDefault
-                ? String((s as z.ZodDefault<typeof s>)._def.defaultValue())
-                : undefined;
+        const defaultValue = defaults[e] || undefined;
         return {
             ref,
             onChange: () => {

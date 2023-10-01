@@ -1,6 +1,6 @@
 {
     "name": "react-form-marker",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "author": "Googlefan <private@googlefan.net>",
     "license": "MIT",
     "main": "./dist/index.js",
